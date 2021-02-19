@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/micro/go-micro/v3/registry"
+	"github.com/unistack-org/micro/v3/register"
 )
 
 func TestMDNS(t *testing.T) {
@@ -14,11 +14,11 @@ func TestMDNS(t *testing.T) {
 		t.Skip()
 	}
 
-	testData := []*registry.Service{
+	testData := []*register.Service{
 		{
 			Name:    "test1",
 			Version: "1.0.1",
-			Nodes: []*registry.Node{
+			Nodes: []*register.Node{
 				{
 					Id:      "test1-1",
 					Address: "10.0.0.1:10001",
@@ -31,7 +31,7 @@ func TestMDNS(t *testing.T) {
 		{
 			Name:    "test2",
 			Version: "1.0.2",
-			Nodes: []*registry.Node{
+			Nodes: []*register.Node{
 				{
 					Id:      "test2-1",
 					Address: "10.0.0.2:10002",
@@ -44,7 +44,7 @@ func TestMDNS(t *testing.T) {
 		{
 			Name:    "test3",
 			Version: "1.0.3",
-			Nodes: []*registry.Node{
+			Nodes: []*register.Node{
 				{
 					Id:      "test3-1",
 					Address: "10.0.0.3:10003",
@@ -58,14 +58,14 @@ func TestMDNS(t *testing.T) {
 
 	travis := os.Getenv("TRAVIS")
 
-	var opts []registry.Option
+	var opts []register.Option
 
 	if travis == "true" {
-		opts = append(opts, registry.Timeout(time.Millisecond*100))
+		opts = append(opts, register.Timeout(time.Millisecond*100))
 	}
 
 	// new registry
-	r := NewRegistry(opts...)
+	r := NewRegister(opts...)
 
 	for _, service := range testData {
 		// register service
@@ -74,7 +74,7 @@ func TestMDNS(t *testing.T) {
 		}
 
 		// get registered service
-		s, err := r.GetService(service.Name)
+		s, err := r.LookupService(service.Name)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -146,14 +146,14 @@ func TestEncoding(t *testing.T) {
 			Metadata: map[string]string{
 				"foo": "bar",
 			},
-			Endpoints: []*registry.Endpoint{
+			Endpoints: []*register.Endpoint{
 				{
 					Name: "endpoint1",
-					Request: &registry.Value{
+					Request: &register.Value{
 						Name: "request",
 						Type: "request",
 					},
-					Response: &registry.Value{
+					Response: &register.Value{
 						Name: "response",
 						Type: "response",
 					},
@@ -204,11 +204,11 @@ func TestWatcher(t *testing.T) {
 		t.Skip()
 	}
 
-	testData := []*registry.Service{
+	testData := []*register.Service{
 		{
 			Name:    "test1",
 			Version: "1.0.1",
-			Nodes: []*registry.Node{
+			Nodes: []*register.Node{
 				{
 					Id:      "test1-1",
 					Address: "10.0.0.1:10001",
@@ -221,7 +221,7 @@ func TestWatcher(t *testing.T) {
 		{
 			Name:    "test2",
 			Version: "1.0.2",
-			Nodes: []*registry.Node{
+			Nodes: []*register.Node{
 				{
 					Id:      "test2-1",
 					Address: "10.0.0.2:10002",
@@ -234,7 +234,7 @@ func TestWatcher(t *testing.T) {
 		{
 			Name:    "test3",
 			Version: "1.0.3",
-			Nodes: []*registry.Node{
+			Nodes: []*register.Node{
 				{
 					Id:      "test3-1",
 					Address: "10.0.0.3:10003",
@@ -246,7 +246,7 @@ func TestWatcher(t *testing.T) {
 		},
 	}
 
-	testFn := func(service, s *registry.Service) {
+	testFn := func(service, s *register.Service) {
 		if s == nil {
 			t.Fatalf("Expected one result for %s got nil", service.Name)
 
@@ -277,14 +277,14 @@ func TestWatcher(t *testing.T) {
 
 	travis := os.Getenv("TRAVIS")
 
-	var opts []registry.Option
+	var opts []register.Option
 
 	if travis == "true" {
-		opts = append(opts, registry.Timeout(time.Millisecond*100))
+		opts = append(opts, register.Timeout(time.Millisecond*100))
 	}
 
 	// new registry
-	r := NewRegistry(opts...)
+	r := NewRegister(opts...)
 
 	w, err := r.Watch()
 	if err != nil {
