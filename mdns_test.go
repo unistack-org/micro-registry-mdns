@@ -1,6 +1,7 @@
 package mdns
 
 import (
+	"context"
 	"os"
 	"testing"
 	"time"
@@ -9,6 +10,8 @@ import (
 )
 
 func TestMDNS(t *testing.T) {
+	ctx := context.Background()
+
 	// skip test in travis because of sendto: operation not permitted error
 	if travis := os.Getenv("TRAVIS"); travis == "true" {
 		t.Skip()
@@ -69,12 +72,12 @@ func TestMDNS(t *testing.T) {
 
 	for _, service := range testData {
 		// register service
-		if err := r.Register(service); err != nil {
+		if err := r.Register(ctx, service); err != nil {
 			t.Fatal(err)
 		}
 
 		// get registered service
-		s, err := r.LookupService(service.Name)
+		s, err := r.LookupService(ctx, service.Name)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -106,7 +109,7 @@ func TestMDNS(t *testing.T) {
 		}
 	}
 
-	services, err := r.ListServices()
+	services, err := r.ListServices(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -124,14 +127,14 @@ func TestMDNS(t *testing.T) {
 		}
 
 		// deregister
-		if err := r.Deregister(service); err != nil {
+		if err := r.Deregister(ctx, service); err != nil {
 			t.Fatal(err)
 		}
 
 		time.Sleep(time.Millisecond * 5)
 
 		// check its gone
-		s, _ := r.GetService(service.Name)
+		s, _ := r.LookupService(ctx, service.Name)
 		if len(s) > 0 {
 			t.Fatalf("Expected nothing got %+v", s[0])
 		}
@@ -200,6 +203,8 @@ func TestEncoding(t *testing.T) {
 }
 
 func TestWatcher(t *testing.T) {
+	ctx := context.Background()
+
 	if travis := os.Getenv("TRAVIS"); travis == "true" {
 		t.Skip()
 	}
@@ -286,7 +291,7 @@ func TestWatcher(t *testing.T) {
 	// new registry
 	r := NewRegister(opts...)
 
-	w, err := r.Watch()
+	w, err := r.Watch(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -294,7 +299,7 @@ func TestWatcher(t *testing.T) {
 
 	for _, service := range testData {
 		// register service
-		if err := r.Register(service); err != nil {
+		if err := r.Register(ctx, service); err != nil {
 			t.Fatal(err)
 		}
 
@@ -317,7 +322,7 @@ func TestWatcher(t *testing.T) {
 		}
 
 		// deregister
-		if err := r.Deregister(service); err != nil {
+		if err := r.Deregister(ctx, service); err != nil {
 			t.Fatal(err)
 		}
 
